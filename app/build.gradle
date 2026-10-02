@@ -5,7 +5,7 @@ android { namespace 'com.emeka45.universal.aibrowser'; compileSdk 36
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
 
-dependencies { implementation 'org.mozilla.geckoview:geckoview:159.0.20261001041619' }
+dependencies { implementation 'org.mozilla.geckoview:geckoview:156.0.20260921121718' }
 
 tasks.register('prepareIdlenExtension') {
     def outDir = file('src/main/assets/idlen')
@@ -18,15 +18,7 @@ tasks.register('prepareIdlenExtension') {
             xpi.parentFile.mkdirs()
             xpi.withOutputStream { it << input }
         }
-        copy { from zipTree(xpi); into outDir }
-
-        def manifestFile = new File(outDir, 'manifest.json')
-        def manifest = new groovy.json.JsonSlurper().parse(manifestFile)
-        if (!manifest.browser_specific_settings) manifest.browser_specific_settings = [:]
-        if (!manifest.browser_specific_settings.gecko) manifest.browser_specific_settings.gecko = [:]
-        manifest.browser_specific_settings.gecko.id = 'idlen@universal-ai-browser.local'
-        manifestFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest))
-    }
+        copy { from zipTree(xpi); into outDir }    }
 }
 
 tasks.named('preBuild') { dependsOn 'prepareIdlenExtension' }
