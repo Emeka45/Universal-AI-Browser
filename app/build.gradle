@@ -1,0 +1,24 @@
+plugins { id 'com.android.application' }
+
+android { namespace 'com.emeka45.universal.aibrowser'; compileSdk 36
+    defaultConfig { applicationId 'com.emeka45.universal.aibrowser'; minSdk 26; targetSdk 36; versionCode 1; versionName '0.1.0' }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+
+dependencies { implementation 'org.mozilla.geckoview:geckoview:159.0.20261001041619' }
+
+// Fetch the official Idlen Firefox add-on during CI and package it as a built-in GeckoView extension.
+tasks.register('prepareIdlenExtension') {
+    def outDir = file('src/main/assets/idlen')
+    outputs.dir(outDir)
+    doLast {
+        outDir.mkdirs()
+        def xpi = new File(buildDir, 'idlen.xpi')
+        if (!xpi.exists()) {
+            new URL('https://addons.mozilla.org/firefox/downloads/latest/idlen-earn-while-you-prompt/latest.xpi').withInputStream { input -> xpi.withOutputStream { it << input } }
+        }
+        copy { from zipTree(xpi); into outDir }
+    }
+}
+
+tasks.named('preBuild') { dependsOn 'prepareIdlenExtension' }
