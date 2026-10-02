@@ -7,17 +7,25 @@ android { namespace 'com.emeka45.universal.aibrowser'; compileSdk 36
 
 dependencies { implementation 'org.mozilla.geckoview:geckoview:159.0.20261001041619' }
 
-// Fetch the official Idlen Firefox add-on during CI and package it as a built-in GeckoView extension.
 tasks.register('prepareIdlenExtension') {
     def outDir = file('src/main/assets/idlen')
     outputs.dir(outDir)
     doLast {
+        outDir.deleteDir()
         outDir.mkdirs()
         def xpi = new File(buildDir, 'idlen.xpi')
-        if (!xpi.exists()) {
-            new URL('https://addons.mozilla.org/firefox/downloads/latest/idlen-earn-while-you-prompt/latest.xpi').withInputStream { input -> xpi.withOutputStream { it << input } }
+        new URL('https://addons.mozilla.org/firefox/downloads/latest/idlen-earn-while-you-prompt/latest.xpi').withInputStream { input ->
+            xpi.parentFile.mkdirs()
+            xpi.withOutputStream { it << input }
         }
         copy { from zipTree(xpi); into outDir }
+
+        def manifestFile = new File(outDir, 'manifest.json')
+        def manifest = new groovy.json.JsonSlurper().parse(manifestFile)
+        if (!manifest.browser_specific_settings) manifest.browser_specific_settings = [:]
+        if (!manifest.browser_specific_settings.gecko) manifest.browser_specific_settings.gecko = [:]
+        manifest.browser_specific_settings.gecko.id = 'idlen@universal-ai-browser.local'
+        manifestFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest))
     }
 }
 
