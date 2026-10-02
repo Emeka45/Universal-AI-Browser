@@ -29,7 +29,7 @@ public final class MainActivity extends Activity {
 
     private void installIdlen() {
         runtime.getWebExtensionController()
-                .ensureBuiltIn("resource://android/assets/idlen/", "idlen@example.com")
+                .ensureBuiltIn("resource://android/assets/idlen/", "extension@idlen.io")
                 .accept(ext -> Log.i("UniversalAI", "Idlen installed: " + ext),
                         err -> Log.e("UniversalAI", "Idlen install failed", err));
     }
