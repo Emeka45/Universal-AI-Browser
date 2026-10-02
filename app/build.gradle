@@ -1,6 +1,6 @@
 plugins { id 'com.android.application' }
 
-android { namespace 'com.emeka45.universal.aibrowser'; compileSdk 36
+android { namespace 'com.emeka45.universal.aibrowser'; compileSdk 37
     defaultConfig { applicationId 'com.emeka45.universal.aibrowser'; minSdk 26; targetSdk 36; versionCode 1; versionName '0.1.0' }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
@@ -18,7 +18,8 @@ tasks.register('prepareIdlenExtension') {
             xpi.parentFile.mkdirs()
             xpi.withOutputStream { it << input }
         }
-        copy { from zipTree(xpi); into outDir }    }
+        copy { from zipTree(xpi); into outDir }
+    }
 }
 
 tasks.named('preBuild') { dependsOn 'prepareIdlenExtension' }
