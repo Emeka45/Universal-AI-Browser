@@ -12,8 +12,19 @@ android {
         applicationId 'com.emeka45.universal.aibrowser'
         minSdk 26
         targetSdk 36
-        versionCode 1
-        versionName '0.1.0'
+        versionCode 2
+        versionName '0.2.0'
+    }
+
+    // Personal-use build target: Redmi A1's reported armv7l environment.
+    // Do not package unrelated x86/x86_64/ARM64 GeckoView native libraries.
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi-v7a'
+            universalApk false
+        }
     }
 
     compileOptions {
