@@ -27,12 +27,26 @@ jobs:
           java -version
           gradle --version
 
-      - name: Build debug APK
-        run: gradle assembleDebug --stacktrace --no-daemon
+      - name: Build optimized Redmi A1 release APK
+        run: gradle assembleRelease --stacktrace --no-daemon
 
-      - name: Upload debug APK
+      - name: Verify APK output and report size
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$(find app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
+          test -n "$APK"
+          test -s "$APK"
+          echo "Release APK: $APK"
+          du -h "$APK"
+          if command -v aapt >/dev/null 2>&1; then
+            aapt dump badging "$APK" | head -n 3
+          fi
+
+      - name: Upload optimized release APK
         uses: actions/upload-artifact@v4
         with:
-          name: universal-ai-browser-debug
-          path: app/build/outputs/apk/debug/*.apk
+          name: universal-ai-bridge-redmi-a1-release
+          path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+          retention-days: 90
