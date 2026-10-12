@@ -30,15 +30,43 @@ jobs:
       - name: Build optimized Redmi A1 release APK
         run: gradle assembleRelease --stacktrace --no-daemon
 
-      - name: Verify APK output and report size
+      - name: Inspect APK size and compression opportunities
         shell: bash
         run: |
           set -euo pipefail
           APK="$(find app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
           test -n "$APK"
           test -s "$APK"
-          echo "Release APK: $APK"
+          echo "APK path: $APK"
+          echo "APK bytes: $(stat -c '%s' "$APK")"
           du -h "$APK"
+          echo
+          echo "Largest APK entries by uncompressed size:"
+          unzip -l "$APK" | awk 'NF >= 4 && $1 ~ /^[0-9]+$/ {print $1 "\t" $4}' | sort -nr | head -n 25
+          echo
+          echo "Native library entries:"
+          unzip -l "$APK" | grep -E 'lib/armeabi-v7a/.*\.so$' || true
+          echo
+          echo "ZIP compression summary (stored vs compressed bytes):"
+          python3 - "$APK" <<'PY'
+          import sys, zipfile
+          path = sys.argv[1]
+          with zipfile.ZipFile(path) as z:
+              rows = sorted(
+                  ((i.file_size, i.compress_size, i.filename, i.compress_type)
+                   for i in z.infolist() if not i.is_dir()),
+                  reverse=True
+              )
+              total_raw = sum(r[0] for r in rows)
+              total_zip = sum(r[1] for r in rows)
+              print(f"total uncompressed: {total_raw:,} bytes")
+              print(f"total compressed entries: {total_zip:,} bytes")
+              print(f"compression saved: {total_raw-total_zip:,} bytes")
+              print("Top 20 entries (raw / compressed / method / path):")
+              for raw, comp, name, method in rows[:20]:
+                  print(f"{raw:,} / {comp:,} / {method} / {name}")
+          PY
+          echo
           if command -v aapt >/dev/null 2>&1; then
             aapt dump badging "$APK" | head -n 3
           fi
