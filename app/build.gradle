@@ -17,7 +17,6 @@ android {
     }
 
     // Redmi A1 target: package only its 32-bit ARM ABI.
-    // This avoids shipping native libraries for unrelated device architectures.
     splits {
         abi {
             enable true
@@ -27,23 +26,27 @@ android {
         }
     }
 
-    // Personal Redmi A1 build: compress GeckoView's native libraries inside the APK.
-    // libxul.so is the dominant file, so this materially reduces the APK download size.
     packaging {
         jniLibs {
             useLegacyPackaging true
+            // EXPERIMENTAL size test only: these GeckoView libraries support
+            // native crash reporting/diagnostics. Excluding them may reduce
+            // crash diagnostics, so this is being evaluated on a test branch
+            // and will not be merged into main without further validation.
+            excludes += [
+                '**/libcrashhelper.so',
+                '**/libcrashtools.so'
+            ]
         }
     }
 
     buildTypes {
         release {
-            // Shrink app code/resources while preserving GeckoView's required native engine.
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            // Keep the debug build easy to diagnose during device testing.
             minifyEnabled false
             shrinkResources false
         }
