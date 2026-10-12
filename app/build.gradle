@@ -12,8 +12,8 @@ android {
         applicationId 'com.emeka45.universal.aibrowser'
         minSdk 26
         targetSdk 36
-        versionCode 3
-        versionName '0.3.0'
+        versionCode 4
+        versionName '0.4.0'
     }
 
     // Redmi A1 target: package only its 32-bit ARM ABI.
@@ -24,6 +24,14 @@ android {
             reset()
             include 'armeabi-v7a'
             universalApk false
+        }
+    }
+
+    // Personal Redmi A1 build: compress GeckoView's native libraries inside the APK.
+    // libxul.so is the dominant file, so this materially reduces the APK download size.
+    packaging {
+        jniLibs {
+            useLegacyPackaging true
         }
     }
 
